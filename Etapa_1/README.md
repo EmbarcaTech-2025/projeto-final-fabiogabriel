@@ -31,7 +31,7 @@ O principal objetivo deste projeto é desenvolver um robô autônomo e interativ
 - **Interação Sonora:** Emissão de sons (efeitos) e, opcionalmente, captação de comandos de voz simples.
 - **Reação ao Ambiente:** Reação a estímulos como proximidade, luz e toque (se houver sensores de toque).
 - **Comportamentos de Companhia:** Interação lúdica com o ambiente, "brincar" (movimentos e sons), e modo de "descanso".
-- **Gerenciamento de Energia:** Monitoramento do nível da bateria e retorno à "base" para recarregar.
+- **Gerenciamento de Energia:** Monitoramento do nível da bateria.
 
 ## Requisitos Não Funcionais
 
