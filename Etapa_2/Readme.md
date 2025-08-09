@@ -60,7 +60,7 @@ Quando a árvore sai do nó de Repeat, é acionado um aviso indicando a necessid
 
 ## Diagrama de Hardware
 
-![Diagrama de Hardware](img/Projeto%20Final-Embarcatech(2).jpg)
+![Diagrama de Hardware](img/Diagrama_Hardware.jpg)
 
 O diagrama de hardware do projeto I-C apresenta uma arquitetura eletrônica modular e escalável. A BitDogLab é o componente principal, orquestrando todas as operações do sistema.
 
