@@ -36,7 +36,7 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 
-add_executable(robozinho src/main.cpp src/distancia/sensor_distancia.cpp )
+add_executable(robozinho src/main.cpp src/distancia/sensor_distancia.cpp src/behaviortree.cpp src/nodes.cpp)
 
 pico_set_program_name(robozinho "robozinho")
 pico_set_program_version(robozinho "0.1")
