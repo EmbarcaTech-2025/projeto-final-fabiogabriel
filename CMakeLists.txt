@@ -35,6 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
+
 add_executable(robozinho src/main.cpp src/distancia/sensor_distancia.cpp )
 
 pico_set_program_name(robozinho "robozinho")
@@ -44,9 +45,11 @@ pico_set_program_version(robozinho "0.1")
 pico_enable_stdio_uart(robozinho 0)
 pico_enable_stdio_usb(robozinho 1)
 
+
 # Add the standard library to the build
 target_link_libraries(robozinho
-        pico_stdlib)
+        pico_stdlib
+        )
 
 # Add the standard include files to the build
 target_include_directories(robozinho PRIVATE
