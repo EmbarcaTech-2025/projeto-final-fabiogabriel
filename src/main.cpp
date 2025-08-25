@@ -4,6 +4,7 @@
 #include "hardware/i2c.h"
 #include "behaviortree.h"
 #include "distancia/sensor_distancia.h" // Inclua a biblioteca do sensor
+#include "display/display.h" 
 
 // =========================================================================
 //                             FUNÇÃO PRINCIPAL
@@ -37,6 +38,8 @@ int main() {
     sensor.init();
     sensor.setTimeout(500);
     sensor.startContinuous(100);
+
+    display_init();
 
     // Constrói a árvore de comportamento
     Node* tree = build_behavior_tree();

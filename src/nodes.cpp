@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "behaviortree.h"
 #include "distancia/sensor_distancia.h" // Inclua a biblioteca do sensor
+#include "display/display.h"
 
 // Declaração do sensor global para que este arquivo possa acessá-lo
 extern VL53L0X sensor;
@@ -33,6 +34,7 @@ NodeStatus Recue_Node(Node* node) {
 }
 NodeStatus Expressao_Medo_Node(Node* node) {
     printf("Executando: %s\n", node->name);
+    draw_fear_expression_tick();
     return SUCCESS;
 }
 NodeStatus Vire_Node(Node* node) {
@@ -42,7 +44,7 @@ NodeStatus Vire_Node(Node* node) {
 
 NodeStatus Dist_chao_maior_q_x_Node(Node* node) {
     // O valor 'x' é o limite em milímetros
-    const int DISTANCIA_LIMITE_MM = 200; // Exemplo: 200mm = 20cm
+    const int DISTANCIA_LIMITE_MM = 200; //  200mm = 20cm
 
     // Lê a distância do sensor
     int distancia_atual = sensor.readRangeContinuousMillimeters();
@@ -50,7 +52,7 @@ NodeStatus Dist_chao_maior_q_x_Node(Node* node) {
     printf("Executando: %s (Distancia: %d mm)\n", node->name, distancia_atual);
 
     // Verifica se o sensor está lendo uma distância válida
-    if (distancia_atual == 65535) { // O valor 65535 geralmente indica erro de leitura
+    if (distancia_atual == 65535) { 
         printf(" -> Erro na leitura do sensor!\n");
         return FAILURE;
     }
