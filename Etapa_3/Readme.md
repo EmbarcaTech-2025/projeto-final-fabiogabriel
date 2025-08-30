@@ -38,13 +38,13 @@ Após buscar alternativas, o papel Paraná foi escolhido como base estrutural. E
 
 Abaixo, uma série de fotos da estrutura do protótipo:
 
-![Estrutura base com BitDogLab](img/caixa%20fechada.jpeg)
-![Caixa de papel paraná](img/encaixe%20da%20placa.jpeg)
-![BitDogLab encaixada na estrutura](img/prototipo%20caixa%20aberta.jpeg)
+<img src="img/caixa fechada.jpeg" alt="Estrutura base com BitDogLab" width="200"/>
+<img src="img/encaixe da placa.jpeg" alt="Caixa de papel paraná" width="200"/>
+<img src="img/prototipo caixa aberta.jpeg" alt="BitDogLab encaixada na estrutura" width="200"/>
 
 Essa versão de estrutura que traz um formato de caixa para o robô, não é o conceito de como ele vai ficar na sua versão final, a ideia é que para a versão final ele fique parecido com essa estrutura que montei em miniatura, onde nela possui um mecanismo de encaixe com peças de lego, facilitando a remoção da parte de cima do robô para realização de manutenções futuras.
 
-![Miniatura](img/miniatura%20de%20lado.jpeg)
-![Miniatura](img/miniatura%20virada.jpeg)
-![Miniatura](img/miniatura.jpeg)
-![Miniatura](img/miniatura%20aberta.jpeg)
+<img src="img/miniatura de lado.jpeg" alt="Miniatura de lado" width="200"/>
+<img src="img/miniatura virada.jpeg" alt="Miniatura virada" width="200"/>
+<img src="img/miniatura.jpeg" alt="Miniatura" width="200"/>
+<img src="img/miniatura aberta.jpeg" alt="Miniatura aberta" width="200"/>
