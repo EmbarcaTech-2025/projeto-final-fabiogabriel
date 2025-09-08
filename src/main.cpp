@@ -2,9 +2,11 @@
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "hardware/i2c.h"
-#include "behaviortree.h"
+#include "behavior/behaviortree.h"
 #include "distancia/sensor_distancia.h" // Inclua a biblioteca do sensor
 #include "display/display.h" 
+#include "botoes/gpio.h"
+#include "joystick/joystick.h"
 
 // =========================================================================
 //                             FUNÇÃO PRINCIPAL
@@ -14,6 +16,8 @@
 #define I2C_PORT i2c0
 #define I2C_SDA 0
 #define I2C_SCL 1
+#define BUTTON_A 5
+#define BUTTON_B 6
 
 // Declaração do sensor como uma variável global para que possa ser acessada por todos os arquivos
 VL53L0X sensor;
@@ -27,6 +31,8 @@ int main() {
         return -1;
     }
     
+    init_joystick();
+    init_gpio();
     // Inicialização do I2C para o sensor VL53L0X
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);

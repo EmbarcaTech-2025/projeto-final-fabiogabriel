@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include <stdlib.h>
+#include <math.h>
 #include "display.h"
 
 // === Definições de tela ===
 #define SCREEN_WIDTH   320
 #define SCREEN_HEIGHT  240
+#define BLACK   0x0000
+#define WHITE   0xFFFF
 
 // === Pin Definitions for Raspberry Pi Pico W ===
 #define PIN_DIN    19  // MOSI
@@ -81,7 +85,8 @@ void st7789_draw_pixel(int x, int y, uint16_t color) {
     gpio_put(PIN_CS, 1);
 }
 
-void st7789_draw_circle(int cx, int cy, int r, uint16_t color) {
+// Desenha um círculo preenchido (para simular pixels mais grossos)
+void st7789_draw_circle_pixel(int cx, int cy, int r, uint16_t color) {
     for (int y = -r; y <= r; y++) {
         for (int x = -r; x <= r; x++) {
             if (x*x + y*y <= r*r) {
@@ -91,11 +96,69 @@ void st7789_draw_circle(int cx, int cy, int r, uint16_t color) {
     }
 }
 
-void draw_eyes(int cx1, int cy1, int cx2, int cy2, uint16_t color) {
-    int eye_radius = 50;
-    st7789_draw_circle(cx1, cy1, eye_radius, color);
-    st7789_draw_circle(cx2, cy2, eye_radius, color);
+// === Funções para desenhar as formas dos olhos ===
+void st7789_draw_line(int x0, int y0, int x1, int y1, int thickness, uint16_t color) {
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = (dx > dy ? dx : -dy) / 2, e2;
+
+    for (;;) {
+        st7789_draw_circle_pixel(x0, y0, thickness/2, color);
+        if (x0 == x1 && y0 == y1) break;
+        e2 = err;
+        if (e2 > -dx) { err -= dy; x0 += sx; }
+        if (e2 < dy) { err += dx; y0 += sy; }
+    }
 }
+
+void st7789_draw_right_chevron(int cx, int cy, int size, int slant, int thickness, uint16_t color) {
+    st7789_draw_line(cx, cy, cx + size, cy + slant, thickness, color);
+    st7789_draw_line(cx, cy, cx + size, cy - slant, thickness, color);
+}
+
+void st7789_draw_left_chevron(int cx, int cy, int size, int slant, int thickness, uint16_t color) {
+    st7789_draw_line(cx, cy, cx - size, cy + slant, thickness, color);
+    st7789_draw_line(cx, cy, cx - size, cy - slant, thickness, color);
+}
+
+// Desenha um arco de círculo com espessura (para a boca ou os olhos)
+void st7789_draw_arc(int cx, int cy, int r, int start_angle, int end_angle, int thickness, uint16_t color) {
+    for (int y = -r; y <= r; y++) {
+        for (int x = -r; x <= r; x++) {
+            float dist = sqrt(x*x + y*y);
+            if (dist > r - thickness && dist < r + thickness) {
+                float angle = atan2(y, x) * 180.0 / M_PI;
+                if (angle < 0) angle += 360;
+                if (angle >= start_angle && angle <= end_angle) {
+                    st7789_draw_pixel(cx + x, cy + y, color);
+                }
+            }
+        }
+    }
+}
+
+
+// Funções para desenhar os olhos de cada expressão
+void draw_circle_eyes(int cx1, int cy1, int cx2, int cy2, int radius, uint16_t color) {
+    st7789_draw_circle_pixel(cx1, cy1, radius, color);
+    st7789_draw_circle_pixel(cx2, cy2, radius, color);
+}
+
+void draw_chevron_eyes(int cx1, int cy1, int cx2, int cy2, int size, int slant, int thickness, uint16_t color) {
+    st7789_draw_left_chevron(cx1, cy1, size, slant, thickness, color);
+    st7789_draw_right_chevron(cx2, cy2, size, slant, thickness, color);
+}
+
+// Desenha a forma de olhos de risada (arcos curvados)
+void draw_laugh_eyes(int cx1, int cy1, int cx2, int cy2, int size, int thickness, uint16_t color) {
+    // Olho esquerdo
+    st7789_draw_arc(cx1, cy1 - size/2, size, 180, 360, thickness, color);
+    // Olho direito
+    st7789_draw_arc(cx2, cy2 - size/2, size, 180, 360, thickness, color);
+}
+
+
+
 
 // =========================================================================
 //                  FUNÇÕES PÚBLICAS (usadas por main.c e nodes.c)
@@ -131,14 +194,20 @@ void display_init() {
     st7789_fill(BLACK, SCREEN_WIDTH, SCREEN_HEIGHT); // Fundo preto
 }
 
-void draw_fear_expression_tick() {
+void limpar_tela(){
+    st7789_fill(BLACK, SCREEN_WIDTH, SCREEN_HEIGHT);
+}
+
+void draw_normal_expression_tick() {
+    // Posições dos olhos
     static int eye_x1 = 100;
     static int eye_x2 = 220;
-    static int eye_y = 120;
-    static int dir = 4;
+    static const int eye_y = 120;
+    static const int eye_radius = 50;
+    static int dir = 6;
 
-    // Apaga olhos antigos (desenha com cor preta)
-    draw_eyes(eye_x1, eye_y, eye_x2, eye_y, BLACK);
+    // Limpa a tela
+    st7789_fill(BLACK, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // Atualiza posição
     eye_x1 += dir;
@@ -148,8 +217,114 @@ void draw_fear_expression_tick() {
     }
 
     // Desenha olhos novos com cor branca
-    draw_eyes(eye_x1, eye_y, eye_x2, eye_y, WHITE);
+    draw_circle_eyes(eye_x1, eye_y, eye_x2, eye_y, eye_radius, WHITE);
 
     // Pequeno atraso para a animação ser visível
+    sleep_ms(50);
+}
+
+void draw_fear_expression_tick() {
+    // Variáveis estáticas para manter o estado entre as chamadas da função
+    static int eye_x1 = 140;
+    static int eye_x2 = 180;
+    static int eye_y = 120;
+    static int thickness = 7;
+    static int eye_size = 80;
+    static int eye_slant = 15;
+
+    // Limpa a tela para evitar rastros dos olhos
+    st7789_fill(BLACK, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Gera um pequeno deslocamento aleatório para o tremor
+    int offset_x = (rand() % 11) - 5; // Valores entre -5 e 5
+    int offset_y = (rand() % 11) - 5; // Valores entre -5 e 5
+
+    // Desenha os olhos com o deslocamento para criar o efeito trêmulo
+    draw_chevron_eyes(eye_x1 + offset_x, eye_y + offset_y, eye_x2 + offset_x, eye_y + offset_y, eye_size, eye_slant, thickness, WHITE);
+    
+    // Pequeno atraso para a animação ser visível
+    sleep_ms(50);
+}
+
+void draw_laugh_expression_tick() {
+    static int eye_x1 = 100;
+    static int eye_x2 = 220;
+    static int eye_y = 160; // Posição vertical para a risada
+    static int thickness = 7;
+    static int eye_size = 40;
+
+    // Limpa a tela
+    st7789_fill(BLACK, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Gera um pequeno deslocamento aleatório para o tremor
+    int offset_x = (rand() % 11) - 5; // Valores entre -5 e 5
+    int offset_y = (rand() % 11) - 5; // Valores entre -5 e 5
+
+    draw_laugh_eyes(eye_x1 + offset_x, eye_y + offset_y, eye_x2 + offset_x, eye_y + offset_y, eye_size, thickness, WHITE);
+    
+    // Pequeno atraso para a animação ser visível
+    sleep_ms(50);
+}
+
+void draw_sleep_expression_tick() {
+    const int eye_x1 = 100;
+    const int eye_x2 = 220;
+    const int eye_y = 120;
+    const int thickness = 7;
+    const int max_size = 40;
+
+    limpar_tela();
+
+    st7789_draw_line(eye_x1 - max_size, eye_y, eye_x1 + max_size, eye_y, thickness, WHITE);
+    st7789_draw_line(eye_x2 - max_size, eye_y, eye_x2 + max_size, eye_y, thickness, WHITE);
+
+    sleep_ms(50);
+}
+
+
+// Supondo que você tenha a tela inicializada e funções como draw_circle
+void draw_eyes_follow_joystick(uint16_t joystick_x, uint16_t joystick_y) {
+    printf("Desenhando olhos seguindo o joystick...\n");
+    
+    limpar_tela();
+
+    // Mapeia a leitura do joystick (0-4095) para a posição dos olhos
+    // Supondo que o centro do joystick seja 2047 e a margem de movimento seja 10 pixels
+    const int joystick_center = 2047;
+    const int eye_max_movement = 30;
+    
+    int eye_x_offset = (int)((float)(joystick_y - joystick_center) / (float)joystick_center * eye_max_movement);
+    int eye_y_offset = (int)((float)(joystick_x - joystick_center) / (float)joystick_center * eye_max_movement);
+
+    // Posição base dos olhos (valores de exemplo)
+    int left_eye_base_x = 100;
+    int left_eye_base_y = 120;
+    int right_eye_base_x = 220;
+    int right_eye_base_y = 120;
+
+    // Calcula as posições finais
+    int left_eye_x = left_eye_base_x + eye_x_offset;
+    int left_eye_y = left_eye_base_y + eye_y_offset;
+    int right_eye_x = right_eye_base_x + eye_x_offset;
+    int right_eye_y = right_eye_base_y + eye_y_offset;
+
+    // Chama sua função para desenhar os olhos
+    draw_circle_eyes(left_eye_x, left_eye_y, right_eye_x, right_eye_y, 50, 0xFFFF); // 0xFFFF é branco
+    
+    sleep_ms(50);
+}
+
+void draw_boredom_arc_eyes() {
+    const int eye_x1 = 100;
+    const int eye_x2 = 220;
+    const int eye_y = 120;
+    const int thickness = 30;
+    const int max_size = 40;
+
+    limpar_tela();
+
+    st7789_draw_line(eye_x1 - max_size, eye_y, eye_x1 + max_size, eye_y, thickness, WHITE);
+    st7789_draw_line(eye_x2 - max_size, eye_y, eye_x2 + max_size, eye_y, thickness, WHITE);
+
     sleep_ms(50);
 }
