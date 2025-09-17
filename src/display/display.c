@@ -157,8 +157,16 @@ void draw_laugh_eyes(int cx1, int cy1, int cx2, int cy2, int size, int thickness
     st7789_draw_arc(cx2, cy2 - size/2, size, 180, 360, thickness, color);
 }
 
-
-
+// === Funções para desenhar os olhos de cada expressão ===
+void draw_dizzy_eyes(int cx1, int cy1, int cx2, int cy2, int size, int thickness, uint16_t color) {
+    // Olho esquerdo: Desenha dois chevrons para formar um 'X'
+    st7789_draw_left_chevron(cx1, cy1, size, size, thickness, color);
+    st7789_draw_right_chevron(cx1, cy1, size, size, thickness, color);
+    
+    // Olho direito: Desenha dois chevrons para formar um 'X'
+    st7789_draw_left_chevron(cx2, cy2, size, size, thickness, color);
+    st7789_draw_right_chevron(cx2, cy2, size, size, thickness, color);
+}
 
 // =========================================================================
 //                  FUNÇÕES PÚBLICAS (usadas por main.c e nodes.c)
@@ -281,6 +289,17 @@ void draw_sleep_expression_tick() {
     sleep_ms(50);
 }
 
+void draw_dizzy_expression_tick() {
+    static int eye_x1 = 100;
+    static int eye_x2 = 220;
+    static const int eye_y = 120;
+    static const int thickness = 7;
+    static const int eye_size = 40;
+
+    limpar_tela();
+    draw_dizzy_eyes(eye_x1, eye_y, eye_x2, eye_y, eye_size, thickness, WHITE);
+    sleep_ms(50);
+}
 
 // Supondo que você tenha a tela inicializada e funções como draw_circle
 void draw_eyes_follow_joystick(uint16_t joystick_x, uint16_t joystick_y) {
@@ -293,8 +312,9 @@ void draw_eyes_follow_joystick(uint16_t joystick_x, uint16_t joystick_y) {
     const int joystick_center = 2047;
     const int eye_max_movement = 30;
     
-    int eye_x_offset = (int)((float)(joystick_y - joystick_center) / (float)joystick_center * eye_max_movement);
-    int eye_y_offset = (int)((float)(joystick_x - joystick_center) / (float)joystick_center * eye_max_movement);
+    int eye_x_offset = -(int)((float)(joystick_y - joystick_center) / (float)joystick_center * eye_max_movement); // inverte esquerda/direita
+    int eye_y_offset =  (int)((float)(joystick_x - joystick_center) / (float)joystick_center * eye_max_movement); // mantém cima/baixo
+
 
     // Posição base dos olhos (valores de exemplo)
     int left_eye_base_x = 100;
@@ -326,5 +346,99 @@ void draw_boredom_arc_eyes() {
     st7789_draw_line(eye_x1 - max_size, eye_y, eye_x1 + max_size, eye_y, thickness, WHITE);
     st7789_draw_line(eye_x2 - max_size, eye_y, eye_x2 + max_size, eye_y, thickness, WHITE);
 
+    sleep_ms(50);
+}
+
+void draw_sapeca_expression() {
+    static const int eye_x1 = 100;
+    static const int eye_x2 = 220;
+    static const int eye_y = 120;
+    static const int eye_radius = 50;
+    static const int thickness = 7;
+    static const int max_size = 40;
+
+    // Variável estática para alternar entre os olhos
+    static bool left_eye_open = true;
+
+    limpar_tela();
+
+    if (left_eye_open) {
+        // Olho esquerdo aberto (círculo) e direito fechado (linha)
+        st7789_draw_circle_pixel(eye_x1, eye_y, eye_radius, WHITE);
+        st7789_draw_line(eye_x2 - max_size, eye_y, eye_x2 + max_size, eye_y, thickness, WHITE);
+    } else {
+        // Olho esquerdo fechado (linha) e direito aberto (círculo)
+        st7789_draw_line(eye_x1 - max_size, eye_y, eye_x1 + max_size, eye_y, thickness, WHITE);
+        st7789_draw_circle_pixel(eye_x2, eye_y, eye_radius, WHITE);
+    }
+    
+    // Inverte o estado para a próxima chamada
+    left_eye_open = !left_eye_open;
+    
+    sleep_ms(50);
+}
+
+void draw_angry_expression_tick() {
+    const int eye_x1 = 100;
+    const int eye_x2 = 220;
+    const int eye_y = 120;
+    const int eye_size = 30; // Comprimento da linha do olho
+    const int eyebrow_y = 80;
+    const int eyebrow_size = 40;
+    const int eyebrow_slant = 20; // Inclinação da sobrancelha
+    const int thickness = 7;
+    
+    limpar_tela();
+
+    // Desenha os olhos (linhas horizontais finas)
+    st7789_draw_line(eye_x1 - eye_size, eye_y, eye_x1 + eye_size, eye_y, thickness, WHITE);
+    st7789_draw_line(eye_x2 - eye_size, eye_y, eye_x2 + eye_size, eye_y, thickness, WHITE);
+
+    // Desenha as sobrancelhas (linhas inclinadas para fora)
+    st7789_draw_line(eye_x1 - eyebrow_size, eyebrow_y, eye_x1 + eyebrow_size, eyebrow_y + eyebrow_slant, thickness, WHITE);
+    st7789_draw_line(eye_x2 - eyebrow_size, eyebrow_y + eyebrow_slant, eye_x2 + eyebrow_size, eyebrow_y, thickness, WHITE);
+
+    sleep_ms(50);
+}
+
+
+void draw_look_around_expression_tick() {
+    static const int eye_base_x1 = 100;
+    static const int eye_base_x2 = 220;
+    static const int eye_base_y = 120;
+    static const int offset = 20;
+
+    // Array de 8 posições (offsets X, Y)
+    static const int positions[8][2] = {
+        {0, -offset},   // cima
+        {0, offset},    // baixo
+        {-offset, 0},   // esquerda
+        {offset, 0},    // direita
+        {-offset, -offset}, // cima_esq
+        {offset, -offset},  // cima_dir
+        {offset, offset},   // baixo_dir
+        {-offset, offset}   // baixo_esq
+    };
+
+    static int current_pos_index = 0;
+    static int counter = 0;
+    const int change_threshold = 10; // Mudar de posição a cada 10 "ticks"
+
+    limpar_tela();
+
+    // Checa se é hora de mudar para uma nova posição aleatória
+    if (counter >= change_threshold) {
+        current_pos_index = rand() % 8;
+        counter = 0;
+    } else {
+        counter++;
+    }
+
+    // Calcula a nova posição dos olhos com base no array
+    int eye_x1 = eye_base_x1 + positions[current_pos_index][0];
+    int eye_x2 = eye_base_x2 + positions[current_pos_index][0];
+    int eye_y = eye_base_y + positions[current_pos_index][1];
+
+    draw_circle_eyes(eye_x1, eye_y, eye_x2, eye_y, 50, WHITE);
     sleep_ms(50);
 }

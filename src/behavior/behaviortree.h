@@ -85,5 +85,6 @@ NodeStatus Foi_empurrado_Node(Node* node);
 NodeStatus Mostragem_Bateria_Node(Node* node);
 NodeStatus Esta_na_açao_longe_chao(Node* node);
 NodeStatus Retorna_failure(Node* node);
+NodeStatus Expressao_lado(Node* node);
 
 #endif

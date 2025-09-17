@@ -8,19 +8,31 @@
 #include "botoes/gpio.h"
 #include "joystick/joystick.h"
 
+#include "oled/ssd1306.h"
+#include "giroscópio/mpu6050.h"
+#include "buzzer/som.h"
+#include "servo/pca9685.h"
+
+
 // =========================================================================
 //                             FUNÇÃO PRINCIPAL
 // =========================================================================
 
 // Definições I2C
-#define I2C_PORT i2c0
-#define I2C_SDA 0
-#define I2C_SCL 1
+#define I2C_PORT i2c1
+#define I2C_SDA 2
+#define I2C_SCL 3
 #define BUTTON_A 5
 #define BUTTON_B 6
+#define BUZZER_PIN 21
+
 
 // Declaração do sensor como uma variável global para que possa ser acessada por todos os arquivos
-VL53L0X sensor;
+VL53L0X sensor(I2C_PORT, VL53L0X_DEFAULT_ADDRESS);
+
+volatile bool medo_ativo = false;
+
+
 
 int main() {
     stdio_init_all();
@@ -47,12 +59,20 @@ int main() {
 
     display_init();
 
+    pwm_init_buzzer(BUZZER_PIN);
+
+    mpu6050_reset(I2C_PORT);
+
+    int16_t acceleration[3], gyro[3], temp;
+    
+    pca9685_init(I2C_PORT, PCA9685_ADDR);
     // Constrói a árvore de comportamento
     Node* tree = build_behavior_tree();
 
     while(true) {
         printf("\n--- Novo Tick da Arvore ---\n");
         tree->tick_function(tree);
+        pca9685_init(I2C_PORT, PCA9685_ADDR);
         sleep_ms(100);
     }
     return 0;

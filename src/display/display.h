@@ -24,6 +24,10 @@ void draw_eyes_follow_joystick(uint16_t joystick_x, uint16_t joystick_y);
 void draw_sleep_expression_tick();
 void draw_boredom_arc_eyes();
 void st7789_draw_line(int x0, int y0, int x1, int y1, int thickness, uint16_t color);
+void draw_sapeca_expression();
+void draw_look_around_expression_tick();
+void draw_dizzy_expression_tick();
+void draw_angry_expression_tick();
 
 
 

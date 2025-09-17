@@ -44,6 +44,10 @@ add_executable(robozinho
             src/display/display.c
             src/botoes/gpio.c
             src/joystick/joystick.c
+            src/servo/pca9685.c
+            src/oled/ssd1306_i2c.c
+            src/giroscópio/mpu6050.cpp
+            src/buzzer/som.cpp
 )
 
 pico_set_program_name(robozinho "robozinho")
@@ -71,6 +75,7 @@ target_link_libraries(robozinho
         hardware_spi
         hardware_pwm
         hardware_adc
+        hardware_clocks
         )
 
 pico_add_extra_outputs(robozinho)
