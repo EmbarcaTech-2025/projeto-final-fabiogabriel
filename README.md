@@ -19,11 +19,9 @@ Funcionalidades Principais
 
 ## Demonstração em Vídeo
 
-Para ver o Interactive Companion em ação, assista ao vídeo abaixo. Certifique-se de que o arquivo do vídeo (demo.mp4, por exemplo) esteja na pasta do seu repositório.
+Para ver o Interactive Companion em ação, assista ao vídeo abaixo. 
 
-<div align="center">
-<video src="Etapa_4/I-C video.mp4" controls width="700"></video>
-</div>
+![Demonstração das expressões animadas](Etapa_4/I-C-video.gif)
 
 ## Comportamento Dinâmico
 
